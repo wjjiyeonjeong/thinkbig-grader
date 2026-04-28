@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>씽크빅 I단계 1호 채점기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #F7F8FA;
+  --surface: #FFFFFF;
+  --surface2:#F0F2F5;
+  --border:  #E4E7ED;
+  --border2: #D0D5E0;
+  --primary: #2563EB;
+  --primary-pale: #EFF4FF;
+  --green:   #16A34A;
+  --green-pale: #F0FDF4;
+  --red:     #DC2626;
+  --red-pale:#FEF2F2;
+  --yellow:  #D97706;
+  --yellow-pale: #FFFBEB;
+  --purple:  #7C3AED;
+  --purple-pale: #F5F3FF;
+  --text:    #111827;
+  --text2:   #6B7280;
+  --text3:   #9CA3AF;
+  --shadow:  0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.app { max-width: 480px; margin: 0 auto; padding: 0 0 80px; }
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.tb-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--primary); display: flex; align-items: center;
+  justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.tb-title { font-size: 15px; font-weight: 900; color: var(--text); letter-spacing: -0.3px; }
+.tb-sub { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 1px; }
+.stage-badge {
+  background: var(--primary-pale); border: 1px solid #BFDBFE;
+  color: var(--primary); font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px; font-family: 'DM Mono', monospace;
+}
+
+/* ── 섹션 탭 ── */
+.section-tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  position: sticky; top: 61px; z-index: 99;
+}
+.section-tabs::-webkit-scrollbar { display: none; }
+.stab {
+  flex-shrink: 0;
+  padding: 12px 15px;
+  font-size: 12px; font-weight: 700;
+  color: var(--text3);
+  border-bottom: 2.5px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.18s;
+}
+.stab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ── 패널 ── */
+.section-panel { display: none; padding: 16px; animation: fadeUp 0.22s ease; }
+.section-panel.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── 섹션 헤더 ── */
+.sec-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.sec-icon { font-size: 22px; }
+.sec-info-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.sec-info-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.sec-pts {
+  margin-left: auto; flex-shrink: 0;
+  background: var(--primary-pale); border: 1px solid #BFDBFE;
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 11px; font-weight: 700;
+  color: var(--primary); font-family: 'DM Mono', monospace;
+}
+
+/* ── 진행률 ── */
+.progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 14px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.4s ease; width: 0%; }
+
+/* ── 문항 카드 ── */
+.q-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, background 0.2s;
+}
+.q-card.correct { border-color: #86EFAC; background: var(--green-pale); }
+.q-card.wrong   { border-color: #FCA5A5; background: var(--red-pale); }
+
+.q-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.q-badge {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; flex-shrink: 0;
+}
+.q-concept { font-size: 12px; color: var(--text2); flex: 1; line-height: 1.4; }
+.q-pts { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; flex-shrink: 0; }
+
+.q-answer-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border-radius: 10px;
+  padding: 9px 12px; margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+.ans-label { font-size: 10px; color: var(--text3); flex-shrink: 0; }
+.ans-val { font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--green); flex: 1; }
+.ans-val.hidden-ans { color: var(--text3); font-weight: 400; }
+.ans-toggle {
+  font-size: 10px; color: var(--primary);
+  cursor: pointer; padding: 3px 8px;
+  background: var(--primary-pale); border: 1px solid #BFDBFE;
+  border-radius: 6px; flex-shrink: 0; font-weight: 600;
+}
+
+.q-input-row { display: flex; align-items: center; gap: 8px; }
+.q-input {
+  flex: 1; background: var(--surface2);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 11px 14px; font-size: 16px;
+  font-family: 'DM Mono', monospace; font-weight: 700;
+  color: var(--text); outline: none; transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.q-input::placeholder { color: var(--text3); font-weight: 400; font-size: 13px; }
+.q-input:focus { border-color: var(--primary); background: #fff; }
+.q-input.correct { border-color: var(--green); color: var(--green); background: var(--green-pale); }
+.q-input.wrong   { border-color: var(--red);   color: var(--red);   background: var(--red-pale); }
+
+.check-btn {
+  width: 44px; height: 44px; border-radius: 10px; border: 1.5px solid var(--border);
+  font-size: 18px; cursor: pointer; flex-shrink: 0;
+  background: var(--surface2); transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.check-btn:active { transform: scale(0.92); }
+.check-btn.correct { background: var(--green-pale); border-color: #86EFAC; }
+.check-btn.wrong   { background: var(--red-pale);   border-color: #FCA5A5; }
+
+.result-badge {
+  display: none; font-size: 12px; font-weight: 700;
+  padding: 5px 12px; border-radius: 20px; margin-top: 8px;
+}
+.result-badge.show { display: inline-flex; align-items: center; gap: 5px; }
+.result-badge.correct { background: var(--green-pale); color: var(--green); border: 1px solid #86EFAC; }
+.result-badge.wrong   { background: var(--red-pale);   color: var(--red);   border: 1px solid #FCA5A5; }
+
+/* ── 채점 버튼 ── */
+.grade-btn {
+  width: 100%; padding: 15px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 14px;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; margin-top: 4px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+  transition: all 0.18s; -webkit-appearance: none;
+}
+.grade-btn:active { transform: scale(0.97); filter: brightness(0.93); }
+.grade-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── AI 채점 탭 전용 ── */
+.ai-info-card {
+  background: var(--primary-pale);
+  border: 1px solid #BFDBFE;
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.ai-info-icon { font-size: 20px; flex-shrink: 0; }
+.ai-info-text { font-size: 13px; color: #1E40AF; line-height: 1.7; }
+.ai-info-text strong { color: var(--primary); }
+
+.name-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.name-inp {
+  flex: 1; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 11px 14px; font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text); outline: none; -webkit-appearance: none;
+  box-shadow: var(--shadow-sm);
+}
+.name-inp:focus { border-color: var(--primary); }
+.name-inp::placeholder { color: var(--text3); }
+
+.field-label { font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.3px; }
+
+.sec-select {
+  width: 100%; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; font-size: 14px; color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif; outline: none;
+  -webkit-appearance: none; margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+
+/* 업로드 존 */
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: 14px; padding: 28px 20px;
+  text-align: center;
+  background: var(--surface); margin-bottom: 12px;
+  transition: all 0.2s; box-shadow: var(--shadow-sm);
+  min-height: 160px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.upload-zone.drag-over { background: var(--primary-pale); border-color: #93C5FD; }
+.upload-zone.has-img { border-color: #86EFAC; border-style: solid; background: var(--green-pale); }
+.uz-icon { font-size: 36px; opacity: 0.5; margin-bottom: 8px; }
+.uz-hint { font-size: 13px; color: var(--text2); line-height: 1.8; }
+.uz-hint strong { color: var(--primary); }
+#preview-img { width: 100%; border-radius: 10px; display: none; border: 1px solid var(--border); }
+#file-input { display: none; }
+
+.btn-row { display: flex; gap: 8px; margin-bottom: 4px; }
+.btn-secondary {
+  flex: 1; padding: 12px; border-radius: 12px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  font-size: 13px; font-weight: 700; color: var(--text2);
+  font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+  -webkit-appearance: none; transition: all 0.15s;
+}
+.btn-secondary:active { background: var(--border); }
+.btn-danger {
+  padding: 12px 16px; border-radius: 12px;
+  background: var(--red-pale); border: 1.5px solid #FCA5A5;
+  font-size: 13px; font-weight: 700; color: var(--red);
+  font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+  -webkit-appearance: none; display: none;
+}
+
+/* 에러 박스 */
+.error-box {
+  display: none; background: var(--red-pale); border: 1px solid #FCA5A5;
+  border-radius: 10px; padding: 12px 14px;
+  color: var(--red); font-size: 13px; margin-bottom: 10px;
+}
+.error-box.show { display: block; }
+
+/* ── 로딩 ── */
+.loading-box {
+  display: none; text-align: center; padding: 36px 20px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; margin-top: 12px; box-shadow: var(--shadow-sm);
+}
+.loading-box.active { display: block; }
+.loader { display: inline-flex; gap: 6px; margin-bottom: 14px; }
+.ld { width: 10px; height: 10px; border-radius: 50%; animation: bounce 1.2s ease-in-out infinite; }
+.ld:nth-child(1) { background: var(--primary); }
+.ld:nth-child(2) { background: var(--green); animation-delay: .2s; }
+.ld:nth-child(3) { background: var(--yellow); animation-delay: .4s; }
+@keyframes bounce { 0%,80%,100%{ transform:scale(0.6); opacity:0.4; } 40%{ transform:scale(1.2); opacity:1; } }
+.loading-title { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+.loading-sub { font-size: 12px; color: var(--text2); line-height: 2.1; }
+
+/* ── 결과 카드 ── */
+.result-hero {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+  border-radius: 18px; padding: 24px 20px;
+  text-align: center; margin-bottom: 12px;
+  box-shadow: 0 6px 24px rgba(37,99,235,0.3);
+  position: relative; overflow: hidden;
+}
+.result-hero::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); pointer-events: none;
+}
+.rh-label { font-size: 10px; color: rgba(255,255,255,0.6); font-family: 'DM Mono', monospace; letter-spacing: 2px; margin-bottom: 8px; }
+.rh-score { font-size: 64px; font-weight: 900; font-family: 'DM Mono', monospace; line-height: 1; color: #fff; letter-spacing: -2px; }
+.rh-score span { font-size: 22px; opacity: 0.7; font-weight: 400; }
+.rh-fraction { font-size: 12px; color: rgba(255,255,255,0.65); font-family: 'DM Mono', monospace; margin-top: 6px; }
+.rh-emoji { font-size: 38px; margin-top: 12px; display: block; }
+.rh-grade { font-size: 17px; font-weight: 700; color: #fff; margin-top: 4px; }
+
+/* 통계 */
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 10px; }
+.stat-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 8px; text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.stat-n { font-size: 26px; font-weight: 900; font-family: 'DM Mono', monospace; line-height: 1; margin-bottom: 4px; }
+.stat-l { font-size: 11px; color: var(--text2); }
+.c { color: var(--green); } .w { color: var(--red); } .u { color: var(--yellow); }
+
+/* 오답 유형 */
+.etype-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.etype-box {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 12px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.et-cnt { font-size: 22px; font-weight: 900; font-family: 'DM Mono', monospace; }
+.et-lbl { font-size: 11px; font-weight: 600; color: var(--text2); line-height: 1.4; }
+.et-c { border-color: #BFDBFE; } .et-c .et-cnt { color: var(--primary); }
+.et-k { border-color: #FCA5A5; } .et-k .et-cnt { color: var(--red); }
+.et-s { border-color: #FCD34D; } .et-s .et-cnt { color: var(--yellow); }
+.et-o { border-color: #C4B5FD; } .et-o .et-cnt { color: var(--purple); }
+
+/* 취약 개념 */
+.weakness-box {
+  background: var(--primary-pale); border: 1px solid #BFDBFE;
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+}
+.wb-title { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.wb-item { background: var(--surface); border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; border: 1px solid var(--border); }
+.wb-item:last-child { margin-bottom: 0; }
+.wb-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.wb-qs { font-size: 11px; color: var(--primary); margin-bottom: 3px; font-family: 'DM Mono', monospace; font-weight: 600; }
+.wb-desc { font-size: 11px; color: var(--text2); line-height: 1.6; }
+
+/* AI 코멘트 */
+.ai-comment-box {
+  background: var(--purple-pale); border: 1px solid #C4B5FD;
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+}
+.ai-comment-title { font-size: 12px; font-weight: 700; color: var(--purple); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.ai-comment-text { font-size: 13px; color: #4C1D95; line-height: 1.9; }
+
+/* 문항별 결과 */
+.detail-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px; margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.detail-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.detail-item {
+  border: 1.5px solid var(--border); border-radius: 12px; padding: 12px;
+  margin-bottom: 8px; background: var(--bg);
+}
+.detail-item.di-correct { border-color: #86EFAC; background: var(--green-pale); }
+.detail-item.di-wrong   { border-color: #FCA5A5; background: var(--red-pale); }
+.di-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.di-num { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text2); }
+.di-concept { font-size: 12px; font-weight: 600; flex: 1; color: var(--text); }
+.di-icon { font-size: 18px; }
+.di-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.di-box { background: var(--surface); border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border); }
+.di-lbl { font-size: 10px; color: var(--text3); margin-bottom: 3px; }
+.di-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text); }
+.di-val.ans { color: var(--green); }
+.di-cause { margin-top: 7px; display: inline-flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.04); border-radius: 20px; padding: 3px 10px; font-size: 10px; font-weight: 600; }
+
+/* 리셋 */
+.reset-btn {
+  width: 100%; padding: 13px;
+  background: var(--surface); color: var(--text2);
+  border: 1.5px solid var(--border); border-radius: 14px;
+  font-size: 14px; font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+  -webkit-appearance: none; margin-top: 4px;
+  box-shadow: var(--shadow-sm);
+}
+.reset-btn:active { background: var(--surface2); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="tb-icon">🏆</div>
+      <div>
+        <div class="tb-title">씽크빅 채점기</div>
+        <div class="tb-sub">I단계 1호 · 1. 곱셈</div>
+      </div>
+    </div>
+    <div class="stage-badge">3학년 2학기</div>
+  </div>
+
+  <!-- 섹션 탭 — AI 채점 맨 앞 -->
+  <div class="section-tabs">
+    <div class="stab active"  onclick="switchTab(0)">📸 AI 채점</div>
+    <div class="stab" onclick="switchTab(1)">개념이 쑥쑥</div>
+    <div class="stab" onclick="switchTab(2)">익힘 ①</div>
+    <div class="stab" onclick="switchTab(3)">익힘 ②</div>
+    <div class="stab" onclick="switchTab(4)">익힘 ③</div>
+    <div class="stab" onclick="switchTab(5)">완전학습</div>
+    <div class="stab" onclick="switchTab(6)">과정테스트</div>
+  </div>
+
+  <!-- ══ 탭 0: AI 채점 (맨 앞) ══ -->
+  <div class="section-panel active" id="tab-0">
+
+    <div class="ai-info-card">
+      <div class="ai-info-icon">💡</div>
+      <div class="ai-info-text">
+        학생 답안지를 <strong>사진으로 찍으면</strong> AI가 손글씨를 읽고<br>
+        자동으로 채점 + 오답 분석 + 피드백을 드려요.
+      </div>
+    </div>
+
+    <!-- 학생 정보 -->
+    <div class="field-label">학생 이름</div>
+    <div class="name-input-row">
+      <input class="name-inp" id="student-name" type="text" placeholder="이름 입력 (선택)">
+    </div>
+
+    <!-- 섹션 선택 -->
+    <div class="field-label">채점할 섹션</div>
+    <select id="ai-section-select" class="sec-select">
+      <option value="0">개념이 쑥쑥 (4문항)</option>
+      <option value="1">수학 익힘 미리보기 ① (8문항)</option>
+      <option value="2">수학 익힘 미리보기 ② (8문항)</option>
+      <option value="3">수학 익힘 미리보기 ③ (8문항)</option>
+      <option value="4">완전학습 (5문항)</option>
+      <option value="5">과정테스트 (6문항)</option>
+    </select>
+
+    <!-- 이미지 업로드 -->
+    <div class="field-label">답안지 사진</div>
+
+    <!-- 카메라/갤러리 버튼 분리 — 가장 안정적인 방식 -->
+    <div class="btn-row" style="margin-bottom:10px">
+      <button class="grade-btn" onclick="document.getElementById('camera-input').click()" style="flex:1;padding:14px;font-size:14px;box-shadow:none;background:#111827">
+        📷 카메라 촬영
+      </button>
+      <button class="grade-btn" onclick="document.getElementById('gallery-input').click()" style="flex:1;padding:14px;font-size:14px;box-shadow:none;background:var(--surface2);color:var(--text);border:1.5px solid var(--border)">
+        🖼️ 갤러리 선택
+      </button>
+    </div>
+
+    <!-- 카메라 전용 input -->
+    <input type="file" id="camera-input"  accept="image/*" capture="environment" onchange="handleFile(event)" style="display:none">
+    <!-- 갤러리 전용 input (capture 없음) -->
+    <input type="file" id="gallery-input" accept="image/*" onchange="handleFile(event)" style="display:none">
+
+    <!-- 미리보기 존 -->
+    <div class="upload-zone" id="upload-zone"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="handleDrop(event)">
+      <div id="uz-ph">
+        <div class="uz-icon">🗒️</div>
+        <div class="uz-hint">
+          위 버튼으로 사진을 선택하거나<br>
+          여기에 이미지를 <strong>드래그&드롭</strong>하세요<br>
+          <span style="font-size:11px;color:var(--text3)">JPG · PNG · HEIC 지원</span>
+        </div>
+      </div>
+      <img id="preview-img" alt="미리보기">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-danger" id="clear-btn" onclick="clearImg()" style="display:none;width:100%">✕ 이미지 삭제</button>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <button class="grade-btn" id="ai-grade-btn" onclick="startAIGrading()" disabled style="margin-top:12px">
+      🤖 AI 채점 + 분석 시작
+    </button>
+
+    <!-- 로딩 -->
+    <div class="loading-box" id="loading-box">
+      <div class="loader"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div>
+      <div class="loading-title">채점 중이에요!</div>
+      <div class="loading-sub">
+        🔍 손글씨 인식 중...<br>
+        🧮 정답 비교 중...<br>
+        🧠 취약 개념 진단 중...<br>
+        💬 피드백 작성 중...
+      </div>
+    </div>
+
+    <!-- AI 결과 -->
+    <div id="ai-result" style="display:none; margin-top:14px">
+
+      <div class="result-hero">
+        <div class="rh-label">MISSION RESULT</div>
+        <div class="rh-score" id="r-score">0<span>점</span></div>
+        <div class="rh-fraction" id="r-fraction"></div>
+        <span class="rh-emoji" id="r-emoji">🎯</span>
+        <div class="rh-grade" id="r-grade"></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-n c" id="r-correct">0</div><div class="stat-l">✅ 정답</div></div>
+        <div class="stat-box"><div class="stat-n w" id="r-wrong">0</div><div class="stat-l">❌ 오답</div></div>
+        <div class="stat-box"><div class="stat-n u" id="r-unread">0</div><div class="stat-l">❓ 인식불가</div></div>
+      </div>
+
+      <div class="etype-grid">
+        <div class="etype-box et-c"><div class="et-cnt" id="r-concept">0</div><div class="et-lbl">개념 이해<br>부족</div></div>
+        <div class="etype-box et-k"><div class="et-cnt" id="r-calc">0</div><div class="et-lbl">계산<br>실수</div></div>
+        <div class="etype-box et-s"><div class="et-cnt" id="r-careless">0</div><div class="et-lbl">부주의<br>실수</div></div>
+        <div class="etype-box et-o"><div class="et-cnt" id="r-other">0</div><div class="et-lbl">기타/<br>인식불가</div></div>
+      </div>
+
+      <div class="weakness-box">
+        <div class="wb-title">🎯 취약 개념 진단</div>
+        <div id="r-weakness"></div>
+      </div>
+
+      <div class="ai-comment-box">
+        <div class="ai-comment-title">🤖 AI 피드백</div>
+        <div class="ai-comment-text" id="r-comment"></div>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-title">📝 문항별 결과</div>
+        <div id="r-detail"></div>
+      </div>
+
+      <button class="reset-btn" onclick="resetAI()">🔄 다시 채점하기</button>
+    </div>
+  </div>
+
+  <!-- ══ 탭 1~6: 수동 채점 ══ -->
+  <div class="section-panel" id="tab-1">
+    <div class="sec-header">
+      <div class="sec-icon">📘</div>
+      <div>
+        <div class="sec-info-title">개념이 쑥쑥</div>
+        <div class="sec-info-sub">올림 없음 / 일·십·백 자리 올림</div>
+      </div>
+      <div class="sec-pts" id="pts-0">0/4</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-0"></div></div>
+    <div id="qlist-0"></div>
+    <button class="grade-btn" onclick="gradeSection(0)">✅ 이 섹션 채점하기</button>
+  </div>
+
+  <div class="section-panel" id="tab-2">
+    <div class="sec-header">
+      <div class="sec-icon">📙</div>
+      <div>
+        <div class="sec-info-title">수학 익힘 미리보기 ①</div>
+        <div class="sec-info-sub">세 자리 수 × 한 자리 수 확인</div>
+      </div>
+      <div class="sec-pts" id="pts-1">0/8</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-1"></div></div>
+    <div id="qlist-1"></div>
+    <button class="grade-btn" onclick="gradeSection(1)">✅ 이 섹션 채점하기</button>
+  </div>
+
+  <div class="section-panel" id="tab-3">
+    <div class="sec-header">
+      <div class="sec-icon">📙</div>
+      <div>
+        <div class="sec-info-title">수학 익힘 미리보기 ②</div>
+        <div class="sec-info-sub">올림 있는 세 자리 수 × 한 자리 수</div>
+      </div>
+      <div class="sec-pts" id="pts-2">0/8</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-2"></div></div>
+    <div id="qlist-2"></div>
+    <button class="grade-btn" onclick="gradeSection(2)">✅ 이 섹션 채점하기</button>
+  </div>
+
+  <div class="section-panel" id="tab-4">
+    <div class="sec-header">
+      <div class="sec-icon">📙</div>
+      <div>
+        <div class="sec-info-title">수학 익힘 미리보기 ③</div>
+        <div class="sec-info-sub">(몇십)×(몇십), (몇십몇)×(몇십)</div>
+      </div>
+      <div class="sec-pts" id="pts-3">0/8</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-3"></div></div>
+    <div id="qlist-3"></div>
+    <button class="grade-btn" onclick="gradeSection(3)">✅ 이 섹션 채점하기</button>
+  </div>
+
+  <div class="section-panel" id="tab-5">
+    <div class="sec-header">
+      <div class="sec-icon">📗</div>
+      <div>
+        <div class="sec-info-title">완전학습</div>
+        <div class="sec-info-sub">곱셈 종합 확인</div>
+      </div>
+      <div class="sec-pts" id="pts-4">0/5</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-4"></div></div>
+    <div id="qlist-4"></div>
+    <button class="grade-btn" onclick="gradeSection(4)">✅ 이 섹션 채점하기</button>
+  </div>
+
+  <div class="section-panel" id="tab-6">
+    <div class="sec-header">
+      <div class="sec-icon">📕</div>
+      <div>
+        <div class="sec-info-title">과정테스트</div>
+        <div class="sec-info-sub">단원 종합 평가</div>
+      </div>
+      <div class="sec-pts" id="pts-5">0/6</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-5"></div></div>
+    <div id="qlist-5"></div>
+    <button class="grade-btn" onclick="gradeSection(5)">✅ 이 섹션 채점하기</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── 정답 데이터 (PDF 143~155p 기반) ──────────
+const SECTIONS = [
+  { id:0, name:"개념이 쑥쑥", problems:[
+    {num:1,page:3,  answer:"9, 6, 3",     concept:"올림 없는 (세 자리 수)×(한 자리 수)", pts:25},
+    {num:2,page:5,  answer:"1, 4, 7, 4",  concept:"일의 자리 올림 있는 ×", pts:25},
+    {num:3,page:7,  answer:"6, 1, 5, 7",  concept:"십의 자리 올림 있는 ×", pts:25},
+    {num:4,page:9,  answer:"6, 8, 1, 4",  concept:"백의 자리 올림 있는 ×", pts:25},
+  ]},
+  { id:1, name:"수학 익힘 미리보기 ①", problems:[
+    {num:1,page:13, answer:"646",                          concept:"올림 없는 ×", pts:12},
+    {num:2,page:13, answer:"(1) 8,8,4  (2) 2,6,8",        concept:"일의 자리 올림", pts:13},
+    {num:3,page:13, answer:"642",                          concept:"십의 자리 올림", pts:12},
+    {num:4,page:13, answer:"(위에서부터) (1) 1,6,5,2  (2) 3,5,8,5", concept:"백의 자리 올림", pts:13},
+    {num:5,page:14, answer:"832",                          concept:"백의 자리 올림 응용", pts:12},
+    {num:6,page:14, answer:"<",                            concept:"곱셈 크기 비교", pts:13},
+    {num:7,page:14, answer:"1608",                         concept:"백의 자리 올림 응용", pts:12},
+    {num:8,page:14, answer:"283×3, 491×2",                 concept:"800보다 큰 곱셈", pts:13},
+  ]},
+  { id:2, name:"수학 익힘 미리보기 ②", problems:[
+    {num:1,page:15, answer:"312, 3, 936",                  concept:"올림 없는 ×", pts:12},
+    {num:2,page:15, answer:"(1) 242  (2) 844",             concept:"일의 자리 올림", pts:13},
+    {num:3,page:15, answer:"283·612·248 / 264·460·356 / 416·609·684", concept:"곱셈표", pts:12},
+    {num:4,page:15, answer:"116, 4, 464",                  concept:"백의 자리 올림", pts:13},
+    {num:5,page:16, answer:"(위에서부터) 4,6,0,20,200,6,7,2", concept:"세로 계산", pts:12},
+    {num:6,page:16, answer:"(위에서부터) 2, 387",           concept:"올림수 쓰기", pts:13},
+    {num:7,page:16, answer:">",                            concept:"곱셈 크기 비교", pts:12},
+    {num:8,page:16, answer:"140×2=280, 280",               concept:"문장제", pts:13},
+  ]},
+  { id:3, name:"수학 익힘 미리보기 ③", problems:[
+    {num:1,page:17, answer:"(1) 2800  (2) 2160",           concept:"(몇십)×(몇십)", pts:12},
+    {num:2,page:17, answer:"(1) 5400  (2) 1680",           concept:"(몇십)×(몇십)", pts:12},
+    {num:3,page:17, answer:"( ) (○)",                     concept:"크기 비교", pts:13},
+    {num:4,page:17, answer:"1120",                         concept:"가장 큰 수×가장 작은 수", pts:13},
+    {num:5,page:17, answer:"600, 1800, 420",               concept:"(몇십몇)×(몇십)", pts:12},
+    {num:6,page:17, answer:"=",                            concept:"크기 비교", pts:13},
+    {num:7,page:17, answer:"40×30, 16×50, 20×60, 40×20 (같은 쌍 연결)", concept:"같은 값 묶기", pts:12},
+    {num:8,page:17, answer:"24×60=1440, 1440",             concept:"문장제", pts:13},
+  ]},
+  { id:4, name:"완전학습", problems:[
+    {num:1,page:18, answer:"(1) 8,6,0,8  (2) 2,6,8",      concept:"올림 있는 세로 계산", pts:20},
+    {num:2,page:18, answer:"224, 448",                     concept:"2배·4배 곱셈", pts:20},
+    {num:3,page:18, answer:"(위에서부터) 8,6,0,20,300,9,8,4", concept:"분해 계산", pts:20},
+    {num:4,page:18, answer:"147, 2, 294",                  concept:"덧셈→곱셈 전환", pts:20},
+    {num:5,page:18, answer:"2, 579",                       concept:"올림 자리 계산", pts:20},
+  ]},
+  { id:5, name:"과정테스트", problems:[
+    {num:1,page:17, answer:"(1) 966  (2) 864",             concept:"일·십·백 자리 순 계산", pts:17},
+    {num:2,page:17, answer:"224, 448",                     concept:"배수 계산", pts:17},
+    {num:3,page:17, answer:"(위에서부터) 8,6,0,20,300,9,8,4", concept:"분해 계산", pts:16},
+    {num:4,page:17, answer:"147, 2, 294",                  concept:"곱셈식 만들기", pts:17},
+    {num:5,page:17, answer:"2, 579",                       concept:"올림 계산", pts:16},
+    {num:6,page:17, answer:"<",                            concept:"곱셈 크기 비교", pts:17},
+  ]},
+];
+
+const Q_COLORS = [
+  {bg:'#EFF4FF',text:'#2563EB',border:'#BFDBFE'},
+  {bg:'#F0FDF4',text:'#16A34A',border:'#86EFAC'},
+  {bg:'#FFFBEB',text:'#D97706',border:'#FCD34D'},
+  {bg:'#FEF2F2',text:'#DC2626',border:'#FCA5A5'},
+  {bg:'#F5F3FF',text:'#7C3AED',border:'#C4B5FD'},
+  {bg:'#FFF7ED',text:'#EA580C',border:'#FED7AA'},
+  {bg:'#F0FDFA',text:'#0D9488',border:'#99F6E4'},
+  {bg:'#FDF4FF',text:'#9333EA',border:'#E9D5FF'},
+];
+
+let imageBase64 = null, imageMediaType = 'image/jpeg';
+
+// ── 초기화 ──────────────────────────────────
+function init() {
+  SECTIONS.forEach(sec => renderSection(sec));
+}
+
+function renderSection(sec) {
+  const container = document.getElementById(`qlist-${sec.id}`);
+  if (!container) return;
+  container.innerHTML = '';
+  sec.problems.forEach((p, i) => {
+    const qc = Q_COLORS[i % Q_COLORS.length];
+    const div = document.createElement('div');
+    div.className = 'q-card';
+    div.id = `qcard-${sec.id}-${i}`;
+    div.innerHTML = `
+      <div class="q-card-top">
+        <div class="q-badge" style="background:${qc.bg};color:${qc.text};border:1.5px solid ${qc.border}">${p.num}</div>
+        <div class="q-concept">${p.concept}<br><span style="font-size:10px;color:var(--text3)">${p.page}쪽</span></div>
+        <div class="q-pts">${p.pts}pts</div>
+      </div>
+      <div class="q-answer-row">
+        <span class="ans-label">정답</span>
+        <span class="ans-val" id="ans-v-${sec.id}-${i}" style="display:none">${p.answer}</span>
+        <span class="ans-val hidden-ans" id="ans-h-${sec.id}-${i}">••••••</span>
+        <span class="ans-toggle" onclick="toggleAns(${sec.id},${i})">보기</span>
+      </div>
+      <div class="q-input-row">
+        <input class="q-input" id="inp-${sec.id}-${i}" type="text"
+          placeholder="학생 답 입력" inputmode="text" autocomplete="off"
+          onkeyup="if(event.key==='Enter')checkOne(${sec.id},${i})">
+        <button class="check-btn" id="btn-${sec.id}-${i}" onclick="checkOne(${sec.id},${i})">✓</button>
+      </div>
+      <div class="result-badge" id="rb-${sec.id}-${i}"></div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function toggleAns(sid, idx) {
+  const v = document.getElementById(`ans-v-${sid}-${idx}`);
+  const h = document.getElementById(`ans-h-${sid}-${idx}`);
+  const shown = v.style.display !== 'none';
+  v.style.display = shown ? 'none' : 'inline';
+  h.style.display = shown ? 'inline' : 'none';
+}
+
+// ── 탭 전환 ────────────────────────────────
+function switchTab(n) {
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${n}`).classList.add('active');
+  document.querySelectorAll('.stab')[n].classList.add('active');
+}
+
+// ── 문항 체크 ───────────────────────────────
+function checkOne(secId, idx) {
+  const p = SECTIONS[secId].problems[idx];
+  const inp = document.getElementById(`inp-${secId}-${idx}`);
+  const btn = document.getElementById(`btn-${secId}-${idx}`);
+  const card = document.getElementById(`qcard-${secId}-${idx}`);
+  const rb = document.getElementById(`rb-${secId}-${idx}`);
+  const val = inp.value.trim();
+  if (!val) return;
+  const ok = judgeAnswer(val, p.answer);
+  inp.className = 'q-input ' + (ok ? 'correct' : 'wrong');
+  btn.className = 'check-btn ' + (ok ? 'correct' : 'wrong');
+  btn.textContent = ok ? '⭕' : '❌';
+  card.className = 'q-card ' + (ok ? 'correct' : 'wrong');
+  rb.className = `result-badge show ${ok ? 'correct' : 'wrong'}`;
+  rb.innerHTML = ok ? `✅ 정답! +${p.pts}점` : `❌ 오답 — 정답: ${p.answer}`;
+  updateProgress(secId);
+}
+
+function judgeAnswer(s, correct) {
+  const nums = t => t.replace(/[^0-9<>=]/g,' ').trim().split(/\s+/).filter(Boolean);
+  const sN = nums(s), cN = nums(correct);
+  if (['<','>','='].some(op => correct.includes(op)))
+    return ['<','>','='].every(op => s.includes(op) === correct.includes(op));
+  if (sN.length && cN.length) return cN.every(n => sN.includes(n));
+  return s.replace(/\s/g,'') === correct.replace(/\s/g,'');
+}
+
+function updateProgress(secId) {
+  const sec = SECTIONS[secId];
+  let c = 0, a = 0;
+  sec.problems.forEach((_, i) => {
+    const inp = document.getElementById(`inp-${secId}-${i}`);
+    if (inp.classList.contains('correct')) { c++; a++; }
+    else if (inp.classList.contains('wrong')) a++;
+  });
+  document.getElementById(`pts-${secId}`).textContent = `${c}/${sec.problems.length}`;
+  document.getElementById(`prog-${secId}`).style.width = `${a/sec.problems.length*100}%`;
+}
+
+function gradeSection(secId) {
+  SECTIONS[secId].problems.forEach((_, i) => {
+    const inp = document.getElementById(`inp-${secId}-${i}`);
+    if (inp.value.trim()) checkOne(secId, i);
+  });
+}
+
+// ── 이미지 처리 ─────────────────────────────
+function handleFile(e) {
+  if (e.target.files && e.target.files[0]) loadImg(e.target.files[0]);
+  e.target.value = ''; // 같은 파일 재선택 가능하게
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadImg(f);
+}
+function loadImg(file) {
+  imageMediaType = ['image/jpeg','image/png','image/gif','image/webp'].includes(file.type) ? file.type : 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    imageBase64 = ev.target.result.split(',')[1];
+    const img = document.getElementById('preview-img');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    document.getElementById('uz-ph').style.display = 'none';
+    document.getElementById('upload-zone').classList.add('has-img');
+    document.getElementById('ai-grade-btn').disabled = false;
+    document.getElementById('clear-btn').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function clearImg() {
+  imageBase64 = null;
+  const img = document.getElementById('preview-img');
+  img.style.display = 'none'; img.src = '';
+  document.getElementById('uz-ph').style.display = 'flex';
+  document.getElementById('upload-zone').classList.remove('has-img');
+  document.getElementById('ai-grade-btn').disabled = true;
+  document.getElementById('clear-btn').style.display = 'none';
+  // 두 input 모두 초기화해서 재선택 가능하게
+  const ci = document.getElementById('camera-input');
+  const gi = document.getElementById('gallery-input');
+  if (ci) ci.value = '';
+  if (gi) gi.value = '';
+}
+
+// ── AI 채점 ────────────────────────────────
+async function startAIGrading() {
+  const secIdx = parseInt(document.getElementById('ai-section-select').value);
+  const sec = SECTIONS[secIdx];
+  const name = document.getElementById('student-name').value.trim();
+
+  document.getElementById('ai-grade-btn').disabled = true;
+  document.getElementById('clear-btn').style.display = 'none';
+  document.getElementById('loading-box').classList.add('active');
+  document.getElementById('ai-result').style.display = 'none';
+  document.getElementById('error-box').className = 'error-box';
+
+  const answerList = sec.problems.map(p =>
+    `Q${p.num}(${p.pts}점): 정답="${p.answer}" 개념="${p.concept}"`
+  ).join('\n');
+
+  const prompt = `당신은 씽크빅 수학 I단계 1호 채점 전문 AI입니다.
+첨부 이미지는 학생이 손으로 직접 작성한 수학 답안지입니다.
+${name ? `학생 이름: ${name}` : ''}
+
+[섹션: ${sec.name}]
+[정답 목록 — 이 정답을 기준으로 채점하세요]
+${answerList}
+
+[채점 지시사항]
+1. 이미지에서 각 문항(Q1, Q2...)의 손글씨 답을 최대한 정확히 읽어주세요.
+   - 숫자가 흐리거나 불명확해도 최대한 판독해 주세요.
+   - 문항 번호 순서대로 읽어주세요.
+2. 각 문항의 학생 답을 정답과 비교해 정오를 판단하세요.
+   - 수학적으로 동치이면 정답 처리 (예: 0.5 = 1/2, 여러 숫자 순서 무관)
+   - 숫자 하나라도 틀리면 오답
+   - 읽을 수 없으면 student_answer를 null, correct를 null로
+3. 오답마다 유형을 분류하세요:
+   - "concept" : 개념 이해 부족 (공식/원리 잘못 적용)
+   - "calc"    : 계산 실수 (올림 누락, 자릿값 오류 등)
+   - "careless": 부주의 실수 (단순 착오, 부호 실수)
+   - "other"   : 기타/인식불가
+4. 오답 문항 기반으로 취약 개념 2~4개를 구체적으로 진단하세요.
+5. 학생에게 전달할 종합 피드백을 한국어 3~5문장으로 작성하세요.
+   - 잘한 점 + 보완할 점 + 구체적 학습 방법 포함
+   - 초등학생 눈높이에 맞게, 격려하는 톤으로
+
+반드시 순수 JSON만 응답하세요 (마크다운 없이):
+{
+  "recognized": "Q1=12, Q2=풀이 등 인식한 답 요약",
+  "results": [
+    {
+      "q": 1,
+      "student_answer": "학생이 쓴 답 (못 읽으면 null)",
+      "correct": true,
+      "error_type": null,
+      "cause": "오답 원인 한 문장 (정답이면 null)"
+    }
+  ],
+  "weaknesses": [
+    {
+      "topic": "취약 개념명",
+      "questions": [1, 3],
+      "description": "어떤 부분이 부족한지 구체적으로 1~2문장"
+    }
+  ],
+  "overall_comment": "학생에게 전달할 종합 피드백 (한국어, 3~5문장)"
+}`;
+
+  const GEMINI_KEY = 'AIzaSyA6QXLODmJvUc1WJxN02TKTpKKX00_w63k';
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+  try {
+    const resp = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            {
+              inline_data: {
+                mime_type: imageMediaType,
+                data: imageBase64
+              }
+            },
+            { text: prompt }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 2000
+        }
+      })
+    });
+
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!raw) throw new Error('Gemini 응답이 비어있어요. 다시 시도해 주세요.');
+
+    renderAIResult(JSON.parse(raw.replace(/```json|```/g,'').trim()), sec);
+
+  } catch(err) {
+    document.getElementById('loading-box').classList.remove('active');
+    document.getElementById('ai-grade-btn').disabled = false;
+    document.getElementById('clear-btn').style.display = 'block';
+    const eb = document.getElementById('error-box');
+    eb.textContent = '⚠️ ' + err.message;
+    eb.className = 'error-box show';
+  }
+}
+
+function renderAIResult(data, sec) {
+  document.getElementById('loading-box').classList.remove('active');
+
+  const results = data.results || [];
+  let correct=0,wrong=0,unread=0,total=0,max=0;
+  let cC=0,cK=0,cS=0,cO=0;
+
+  sec.problems.forEach(p => {
+    max += p.pts;
+    const r = results.find(x=>x.q===p.num);
+    if (!r) return;
+    if (r.correct===true) { correct++; total+=p.pts; }
+    else if (r.correct===false) {
+      wrong++;
+      if (r.error_type==='concept') cC++;
+      else if (r.error_type==='calc') cK++;
+      else if (r.error_type==='careless') cS++;
+      else cO++;
+    } else { unread++; cO++; }
+  });
+
+  const pct = max>0 ? Math.round(total/max*100) : 0;
+
+  document.getElementById('r-score').innerHTML = `${total}<span>점</span>`;
+  document.getElementById('r-fraction').textContent = `${total}/${max}점 · ${pct}%`;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-unread').textContent = unread;
+  document.getElementById('r-concept').textContent = cC;
+  document.getElementById('r-calc').textContent = cK;
+  document.getElementById('r-careless').textContent = cS;
+  document.getElementById('r-other').textContent = cO;
+
+  let emoji='😢',grade='다시 도전!';
+  if(pct>=95){emoji='🏆';grade='완벽해요!';}
+  else if(pct>=85){emoji='⭐';grade='훌륭해요!';}
+  else if(pct>=70){emoji='😊';grade='잘했어요!';}
+  else if(pct>=50){emoji='💪';grade='조금 더!';}
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-grade').textContent = grade;
+
+  // 취약 개념
+  const wEl = document.getElementById('r-weakness');
+  wEl.innerHTML = (data.weaknesses||[]).length
+    ? (data.weaknesses||[]).map(w=>`
+        <div class="wb-item">
+          <div class="wb-name">${w.topic}</div>
+          <div class="wb-qs">Q${(w.questions||[]).join(', Q')}</div>
+          <div class="wb-desc">${w.description}</div>
+        </div>`).join('')
+    : '<div style="font-size:13px;color:var(--green);font-weight:600">취약 개념 없음 🎉 모든 개념 이해 완료!</div>';
+
+  document.getElementById('r-comment').textContent = data.overall_comment || '—';
+
+  // 문항별 상세
+  const etL = {concept:'개념 부족',calc:'계산 실수',careless:'부주의',other:'기타'};
+  const etC = {concept:'var(--primary)',calc:'var(--red)',careless:'var(--yellow)',other:'var(--purple)'};
+  document.getElementById('r-detail').innerHTML = sec.problems.map(p => {
+    const r = results.find(x=>x.q===p.num);
+    const sa = r ? (r.student_answer ?? '인식불가') : '—';
+    const ic = r ? r.correct : null;
+    const et = r ? r.error_type : null;
+    const cause = r ? (r.cause||'') : '';
+    const se = ic===true ? p.pts : 0;
+    const cls2 = ic===true?'di-correct':ic===false?'di-wrong':'';
+    return `
+      <div class="detail-item ${cls2}">
+        <div class="di-top">
+          <span class="di-num">Q${p.num}</span>
+          <span class="di-concept">${p.concept}</span>
+          <span class="di-icon">${ic===true?'⭕':ic===false?'❌':'❓'}</span>
+        </div>
+        <div class="di-grid">
+          <div class="di-box">
+            <div class="di-lbl">학생 답</div>
+            <div class="di-val">${sa}</div>
+          </div>
+          <div class="di-box">
+            <div class="di-lbl">정답 · ${se}/${p.pts}점</div>
+            <div class="di-val ans">${p.answer}</div>
+          </div>
+        </div>
+        ${et&&ic===false?`<div class="di-cause" style="color:${etC[et]||'var(--purple)'}">${etL[et]||'기타'}${cause?' · '+cause:''}</div>`:''}
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('ai-result').style.display = 'block';
+  document.getElementById('ai-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function resetAI() {
+  clearImg();
+  document.getElementById('ai-result').style.display = 'none';
+}
+
+init();
+</script>
+</body>
+</html>
